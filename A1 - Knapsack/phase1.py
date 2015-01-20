@@ -2,8 +2,10 @@ import csv
 import sys
 import pprint
 
+#Defining global variables
 costLimit = 0
 maxValue = 0
+
 
 class Item:
     def __init__(self):
@@ -68,22 +70,28 @@ class Tree:
     def getTotalValue (self):
         return self.totalValue
         
+#Defining optimal knapsack
 maxTree = Tree()
     
 def addToLeaf(inTree, inItem):
     if (inTree.getLeft() == None) and (inTree.getRight() == None):
+        #Initializing new subtrees
         sameTree = Tree()
         newTree = Tree()
+        #Adding existing items to new subtrees
         for item in inTree.getSack():
             newTree.addToSack(item)
             sameTree.addToSack(item)
+        #Adding new item to newTree
         newTree.addToSack(inItem)
+        #Setting respective pointers to their respective subtrees
         inTree.setLeft(sameTree)
         inTree.setRight(newTree)
     else:
         addToLeaf (inTree.getLeft(), inItem)
         addToLeaf (inTree.getRight(), inItem)
         
+#Simple traversal and print function, only prints those valid within cost limit.
 def printLeaves(inTree):
     global maxValue
     global maxTree
@@ -109,6 +117,7 @@ reader = csv.reader(f)
 rowNum = 0
 knapsack = Tree()
 items = []
+#CSV reading stuff
 for row in reader:
     if rowNum == 0:
         costLimit = row[0]
@@ -117,15 +126,12 @@ for row in reader:
         item.setName(row[0])
         item.setCost(row[1])
         item.setValue(row[2])
-        #sameTree = Tree()
-        #sameTree.setSack = items;
         items.append(item)
-        #addTree = Tree()
-        #addTree.setSack = items;
         addToLeaf(knapsack, item)
-        #print ("%s, %s, %s" % (item.getName(), item.getCost(), item.getValue()))
     rowNum += 1
+#Printing the valid knapsacks
 printLeaves(knapsack)
+#Printing the optimal knapsack
 print ("Optimal Knapsack:", end=' ')
 for item in (maxTree.getSack()):
     print (item.getName(), end="")
