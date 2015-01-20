@@ -130,5 +130,6 @@ print ("Optimal Knapsack:", end=' ')
 for item in (maxTree.getSack()):
     print (item.getName(), end="")
 print (' ')
+print ("Cost:",maxTree.getTotalCost())
 print ("Value:",maxTree.getTotalValue())
 print (' ')
