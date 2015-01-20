@@ -89,8 +89,9 @@ def printLeaves(inTree):
     global maxTree
     if (inTree.getLeft() == None) and (inTree.getRight() == None):
         if (inTree.getTotalCost() <= int(costLimit)):
-            print (inTree.getTotalCost())
-            print (inTree.getTotalValue())
+            print ("Cost:",inTree.getTotalCost())
+            print ("Value:",inTree.getTotalValue())
+            print ("Items:", end=" ")
             for item in (inTree.getSack()):
                 print (item.getName(),end="")
             print (' ')
@@ -125,8 +126,9 @@ for row in reader:
         #print ("%s, %s, %s" % (item.getName(), item.getCost(), item.getValue()))
     rowNum += 1
 printLeaves(knapsack)
-print (' ')
-print (maxTree.getTotalValue())
+print ("Optimal Knapsack:", end=' ')
 for item in (maxTree.getSack()):
     print (item.getName(), end="")
+print (' ')
+print ("Value:",maxTree.getTotalValue())
 print (' ')
