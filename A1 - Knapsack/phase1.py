@@ -5,6 +5,8 @@ import pprint
 #Defining global variables
 costLimit = 0
 maxValue = 0
+rowNum = 0
+leaves = 0
 
 
 class Item:
@@ -52,8 +54,8 @@ class Tree:
     
     def setRight (self, inTree):
         self.right = inTree
-        self.totalCost += inTree.getTotalCost()
-        self.totalValue += inTree.getTotalValue()
+        #self.totalCost += inTree.getTotalCost()
+        #self.totalValue += inTree.getTotalValue()
         
     def getSack (self):
         return self.sack
@@ -69,11 +71,15 @@ class Tree:
         
     def getTotalValue (self):
         return self.totalValue
+
         
 #Defining optimal knapsack
 maxTree = Tree()
     
 def addToLeaf(inTree, inItem):
+    global maxValue
+    global maxTree
+    global rowNum
     if (inTree.getLeft() == None) and (inTree.getRight() == None):
         #Initializing new subtrees
         sameTree = Tree()
@@ -95,26 +101,34 @@ def addToLeaf(inTree, inItem):
 def printLeaves(inTree):
     global maxValue
     global maxTree
+    global leaves
+    
+    #Makes sure we don't go down an unwanted rabbit hole.
+    if (inTree.getTotalCost() > int(costLimit)):
+        return
+    
     if (inTree.getLeft() == None) and (inTree.getRight() == None):
+        leaves += 1
+        #Change indentation!
         if (inTree.getTotalCost() <= int(costLimit)):
             print ("Cost:",inTree.getTotalCost())
             print ("Value:",inTree.getTotalValue())
             print ("Items:", end=" ")
             for item in (inTree.getSack()):
-                print (item.getName(),end="")
+                print (item.getName(),end=", ")
             print (' ')
             print (' ')
             if (inTree.getTotalValue() > int(maxValue)):
                 maxTree = inTree
                 maxValue = inTree.getTotalValue()
-                
+    #elif (inTree.getTotalCost() > int(costLimit)):
+    #    return
     else:
         printLeaves(inTree.getLeft())
         printLeaves(inTree.getRight())
         
 f = sys.stdin.readlines()
 reader = csv.reader(f)
-rowNum = 0
 knapsack = Tree()
 items = []
 #CSV reading stuff
@@ -134,8 +148,9 @@ printLeaves(knapsack)
 #Printing the optimal knapsack
 print ("Optimal Knapsack:", end=' ')
 for item in (maxTree.getSack()):
-    print (item.getName(), end="")
+    print (item.getName(), end=", ")
 print (' ')
 print ("Cost:",maxTree.getTotalCost())
 print ("Value:",maxTree.getTotalValue())
 print (' ')
+print ("Leaves evaluated:", leaves)
