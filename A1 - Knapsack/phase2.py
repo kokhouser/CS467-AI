@@ -1,8 +1,10 @@
 import csv
 import sys
+import time
 import pprint
 
 #Defining global variables
+start_time = float(time.time())
 costLimit = 0
 maxValue = 0
 rowNum = 0
@@ -353,3 +355,5 @@ print (' ')
 print ("Best greedy:",bestValue)
 print (' ')
 print ("Nodes evaluated:", leaves)
+print (' ')
+print("--- seconds ---", time.time() - start_time)
