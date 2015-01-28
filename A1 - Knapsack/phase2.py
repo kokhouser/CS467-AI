@@ -1,7 +1,8 @@
 import csv
 import sys
 import time
-import pprint
+import gc
+import weakref
 
 #Defining global variables
 start_time = float(time.time())
@@ -243,11 +244,12 @@ def steal(knapsack,items):
 #Defining optimal knapsack
 maxTree = Tree()
 bestValue = 0
-    
+  
+#Searching
+'''
 def addToLeaf(inTree, inItem):
     global maxValue
     global maxTree
-    global rowNum
     if (inTree.getLeft() == None) and (inTree.getRight() == None):
         #Initializing new subtrees
         sameTree = Tree()
@@ -264,7 +266,31 @@ def addToLeaf(inTree, inItem):
     else:
         addToLeaf (inTree.getLeft(), inItem)
         addToLeaf (inTree.getRight(), inItem)
-        
+'''
+
+#Keeping list of leaves
+def addToLeaf(leafNodes, inItem):
+    global maxValue
+    global maxTree
+    newLeaves = []
+    for leaf in leafNodes:
+        if leaf.getTotalCost() < int(costLimit):
+            sameTree = Tree()
+            newTree = Tree()
+            for item in leaf.getSack():
+                newTree.addToSack(item)
+                sameTree.addToSack(item)
+            newTree.addToSack(inItem)
+            leaf.setLeft(sameTree)
+            leaf.setRight(newTree)
+            newLeaves.append(leaf.getLeft())
+            newLeaves.append(leaf.getRight())
+            del leaf
+    del leafNodes
+    gc.collect()
+    return newLeaves
+
+
 #Simple traversal and print function, only prints those valid within cost limit.
 def printLeaves(inTree,pot):
     global maxValue
@@ -275,10 +301,12 @@ def printLeaves(inTree,pot):
     leaves += 1
     #Makes sure we don't go down an unwanted rabbit hole.
     if (inTree.getTotalCost() > int(costLimit)):
+        del inTree
         return
     
     #Makes sure we don't go down an unwanted rabbit hole.
     if (int(pot) < bestValue):
+        del inTree
         return
     
     if (inTree.getLeft() == None) and (inTree.getRight() == None):
@@ -296,10 +324,12 @@ def printLeaves(inTree,pot):
                 maxValue = inTree.getTotalValue()
     #elif (inTree.getTotalCost() > int(costLimit)):
     #    return
+        del inTree
     else:
         newPotential = pot - int(inTree.getRight().getSack()[len(inTree.getRight().getSack())-1].getValue())
         printLeaves(inTree.getLeft(),newPotential)
         printLeaves(inTree.getRight(),pot)
+
         
 f = sys.stdin.readlines()
 reader = csv.reader(f)
@@ -308,6 +338,9 @@ ks = Knapsack()
 items = []
 items_back = []
 potential = 0
+#The following is just for 2nd approach
+leafNodes = []
+leafNodes.append(knapsack)
 #CSV reading stuff
 for row in reader:
     if rowNum == 0:
@@ -324,8 +357,10 @@ for row in reader:
         item_back.setValue(row[2])
         items_back.append(item_back)
         items.append(item)
-        addToLeaf(knapsack, item)
+        #addToLeaf(knapsack, item)
+        leafNodes = addToLeaf(leafNodes, item)
     rowNum += 1
+    print (rowNum)
 
 sortCost(items_back)
 steal(ks, items_back)
@@ -343,6 +378,7 @@ if (int(ks.getValue())>int(bestValue)):
     bestValue = ks.getValue()
 ks.resetSack()
 #Printing the valid knapsacks
+
 printLeaves(knapsack,potential)
 #Printing the optimal knapsack
 print ("Optimal Knapsack:", end=' ')
