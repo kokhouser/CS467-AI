@@ -360,12 +360,13 @@ partialValue=stealPartial(ks, items)
 print ("Partial Knapsack: ")
 print ("Value:", partialValue)
 print ('')
+print("--- seconds ---", time.time() - start_time, "\n")
 ks.resetSack()
 empty = Node()
 empty.setPot(potential)
 tree = [empty]
 #traverse(tree, items)
-nodesVisited = 0
+nodesVisited = 1
 #print (potential)
 while (True):
 	if (len(tree) == 0):
@@ -393,16 +394,6 @@ while (True):
 		elif (tree[nodeIndex].getHeight() == len(items)):
 			#Evaluate, now at leaf
 			if ((tree[nodeIndex].getTotalCost() <= int(costLimit))):
-			#if ((tree[nodeIndex].getTotalCost() < 999)):
-				newlist = sorted(tree[nodeIndex].getSack(), key=lambda x: x.name)
-				print ("Possible knapsack:")
-				for item in newlist:
-					print (item.getName(), end=" ")
-				print (' ')
-				print ("Total cost:", tree[nodeIndex].getTotalCost())
-				print ("Total value:", tree[nodeIndex].getTotalValue())
-				#print ("Total potential:", tree[nodeIndex].getPot())
-				print (' ')
 				if (tree[nodeIndex].getTotalValue() > maxValue):
 					maxValue = tree[nodeIndex].getTotalValue()
 					bestSack = tree[nodeIndex]
@@ -424,7 +415,7 @@ while (True):
 			tree.append(newNode)
 			continue
 		elif (tree[nodeIndex].isFinishedLeft() == True and tree[nodeIndex].isFinishedRight() == False):
-			nodesVisited += 1
+			#nodesVisited += 1
 			height += 1
 			#newNode = copy.deepcopy(tree[nodeIndex])
 			newNode = Node()
@@ -439,7 +430,75 @@ while (True):
 			tree.append(newNode)
 			continue
 newlist = sorted(bestSack.getSack(), key=lambda x: x.name)
-print ("Optimal knapsack:")
+print ("Optimized knapsack:")
+for item in newlist:
+	print (item.getName(), end=" ")
+print (' ')
+print ("Total cost:", bestSack.getTotalCost())
+print ("Total value:", bestSack.getTotalValue())
+print (' ')
+print ('Nodes visited:', nodesVisited)
+print("--- seconds ---", time.time() - start_time)
+bestSack = None
+nodeIndex = 0
+maxValue = 0
+height = 0
+empty = Node()
+empty.setPot(potential)
+tree = [empty]
+#traverse(tree, items)
+nodesVisited = 1
+#print (potential)
+while (True):
+	if (len(tree) == 0):
+		break
+	else:
+		if (tree[nodeIndex].isFinishedLeft() and tree[nodeIndex].isFinishedRight()):
+			del tree[nodeIndex]
+			nodeIndex -= 1
+			height -= 1
+			continue
+		elif (tree[nodeIndex].getHeight() == len(items)):
+			#Evaluate, now at leaf
+			if ((tree[nodeIndex].getTotalCost() <= int(costLimit))):
+				if (tree[nodeIndex].getTotalValue() > maxValue):
+					maxValue = tree[nodeIndex].getTotalValue()
+					bestSack = tree[nodeIndex]
+			del tree[nodeIndex]
+			nodeIndex -= 1
+			height -= 1
+			continue
+		elif (tree[nodeIndex].isFinishedLeft() == False):
+			nodesVisited += 1
+			height += 1
+			#newNode = copy.deepcopy(tree[nodeIndex])
+			newNode = Node()
+			newNode.setPot(tree[nodeIndex].getPot() - int(items[height-1].getValue()))
+			for item in tree[nodeIndex].getSack():
+				newNode.addToSack(item)
+			newNode.setHeight(height)
+			tree[nodeIndex].setFinishedLeft(True)
+			nodeIndex += 1
+			tree.append(newNode)
+			continue
+		elif (tree[nodeIndex].isFinishedLeft() == True and tree[nodeIndex].isFinishedRight() == False):
+			#nodesVisited += 1
+			height += 1
+			#newNode = copy.deepcopy(tree[nodeIndex])
+			newNode = Node()
+			newNode.setPot(tree[nodeIndex].getPot())
+			for item in tree[nodeIndex].getSack():
+				newNode.addToSack(item)
+			newNode.addToSack(items[height-1])
+			newNode.setHeight(height)
+			newNode.setFinishedLeft(False)
+			tree[nodeIndex].setFinishedRight()
+			nodeIndex += 1
+			tree.append(newNode)
+			continue
+newlist = sorted(bestSack.getSack(), key=lambda x: x.name)
+print (" ")
+print ("Brute-Forced knapsack:")
 for item in newlist:
 	print (item.getName(), end=" ")
 print (' ')
