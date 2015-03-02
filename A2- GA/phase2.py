@@ -1,6 +1,7 @@
 import csv
 import sys
 import time
+import collections
 from random import randint
 
 
@@ -62,6 +63,12 @@ class Knapsack:
 
     def setSack(self,inSack):
         self.sack = inSack
+        
+    def setCost(self, inCost):
+        self.cost = inCost
+    
+    def setValue (self, inValue):
+        self.value = inValue
     
     '''
     def setFitness(self, inFitness):
@@ -122,6 +129,41 @@ def createOffspring(sack1, sack2):
     childSack = Knapsack()
     childSack.setSack(newSack)
     return childSack
+    
+def cataclysm(leaderboard, inItems):
+    print ("Radiation at unsafe levels, mutation imminent!")
+    numMutate = int(len(leaderboard[0].getSack())*0.4)
+    leader = iter(leaderboard)
+    next(leader)
+    for sack in leader:
+        satisfactory = False
+        counterl = 0
+        sack.setCost(0)
+        sack.setValue(0)
+        while (satisfactory == False and counterl < 5):
+            mutators = []
+            for x in range (0,numMutate):
+                candidate = randint(0,len(leaderboard[0].getSack()))
+                if not candidate in mutators:
+                    mutators.append(candidate)
+            for x, items in enumerate(sack.getSack()):
+                if x in mutators:
+                    if (sack.getSack()[x] == 0):
+                        sack.getSack()[x] = 1
+                    else:
+                        sack.getSack()[x] = 0
+            calcFitness(sack,inItems)
+            if (sack.getValue()>0):
+                satisfactory = True
+            counterl += 1
+        #sortValue(leaderboard)
+    print ("New Population:")
+    for sack in leaderboard:
+        for sackItem in sack.getSack():
+            print (sackItem, end="")
+        print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
+    print ()
+        
         
 f = sys.stdin.readlines()
 reader = csv.reader(f)
@@ -139,7 +181,7 @@ for row in reader:
 	rowNum += 1
 leaderboard = []
 leadCount = 0
-while (leadCount < 10):
+while (leadCount < 100):
     sack = Knapsack()
     randomGenesis(sack,len(items))
     calcFitness(sack,items)
@@ -153,25 +195,43 @@ for sack in leaderboard:
         print (sackItem, end="")
     print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
 print ()
-print ("New Offspring:")
-childSack = createOffspring(leaderboard[0],leaderboard[1]);
-calcFitness(childSack,items);
-for sackItem in childSack.getSack():
-    print (sackItem, end="")
-print (", Cost = ",childSack.getCost(), ", Value = ",childSack.getValue())
-print ()
-if (childSack.getValue()>leaderboard[-1].getValue()):
-    print("Ritual passed! Child is fit to be accepted into the population.")
-    print ()
-    leaderboard.append(childSack)
-    sortValue(leaderboard)
-    del leaderboard[-1]
-    print ("New Population:")
-    for sack in leaderboard:
-        for sackItem in sack.getSack():
+childSack = 0
+counter = 0
+mutationCount = 0
+while (mutationCount < 4):
+    cataclysm(leaderboard, items)
+    mutationCount += 1
+    while (childSack != leaderboard[-1] and counter<len(leaderboard)-1):
+        print ("New Offspring:")
+        childSack = createOffspring(leaderboard[counter],leaderboard[counter+1]);
+        calcFitness(childSack,items);
+        for sackItem in childSack.getSack():
             print (sackItem, end="")
-        print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
-    print ()
-else:
-    print("Ritual failed! Child is unfit to be accepted into society. Commencing incineration of disgraceful offspring.")
-    print()
+        print (", Cost = ",childSack.getCost(), ", Value = ",childSack.getValue())
+        print ()
+        if (childSack.getValue()>leaderboard[-1].getValue()):
+            print("Ritual passed! Child is fit to be accepted into the population.")
+            print ()
+            leaderboard.append(childSack)
+            sortValue(leaderboard)
+            compare = lambda x, y: collections.Counter(childSack.getSack()) == collections.Counter(leaderboard[0].getSack())
+            if (compare):
+                counter = -1
+            del leaderboard[-1]
+            print ("New Population:")
+            for sack in leaderboard:
+                for sackItem in sack.getSack():
+                    print (sackItem, end="")
+                print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
+            print ()
+        else:
+            print("Ritual failed! Child is unfit to be accepted into society. Commencing incineration of disgraceful offspring.")
+            print()
+        counter += 1
+    counter = 0
+print ("Final Population (Master Race):")
+for sack in leaderboard:
+    for sackItem in sack.getSack():
+        print (sackItem, end="")
+    print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
+print ()

@@ -3,7 +3,6 @@ import sys
 import time
 from random import randint
 
-
 #Globals
 costLimit = 0
 
@@ -13,7 +12,7 @@ class Item:
         self.name = None
         self.cost = 0
         self.value = 0
-        
+
     def setName (self, inName):
         self.name = inName
     
@@ -74,14 +73,14 @@ def calcFitness(inSack,inItems):
         if (inSack.getSack()[count] == 1):
             inSack.addToSack(item)
             if (inSack.getCost()>int(costLimit)):
-                inSack.setValue(0)
+                inSack.setValue(-1)
                 break
         count += 1
         
 def randomGenesis(inSack, numItems):
     for x in range (0, numItems):
         inSack.getSack().append(randint(0,1))
-        
+
 def sortValue(items):
     if len(items)>1:
         mid = len(items)//2
@@ -110,7 +109,7 @@ def sortValue(items):
             items[k]=righthalf[j]
             j=j+1
             k=k+1
-        
+
 f = sys.stdin.readlines()
 reader = csv.reader(f)
 items = []
@@ -131,7 +130,7 @@ while (leadCount < 10):
     sack = Knapsack()
     randomGenesis(sack,len(items))
     calcFitness(sack,items)
-    if (sack.getValue()>0):
+    if (sack.getValue()>=0):
         leaderboard.append(sack)
         leadCount += 1
 print ("10 Sacks Are:")
