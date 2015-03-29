@@ -7,7 +7,7 @@ from random import randint
 
 #Globals
 costLimit = 0
-
+evaluated = 0
 
 class Item:
     def __init__(self):
@@ -79,6 +79,8 @@ class Knapsack:
     '''
         
 def calcFitness(inSack,inItems):
+    global evaluated
+    evaluated += 1
     count = 0
     for item in inItems:
         if (inSack.getSack()[count] == 1):
@@ -126,12 +128,32 @@ def createOffspring(sack1, sack2):
     lefthalf = sack1.getSack()[:mid]
     righthalf = sack2.getSack()[mid:]
     newSack = lefthalf+righthalf
+    #mutation
+    muteChance = randint(0,50)
+    if muteChance == 1:
+        #print ("Mutation!")
+        for item in newSack:
+            mutation = randint(0, 9)
+            if (mutation < 4):
+                #print ("Beep")
+                if (item == 1):
+                    item = 0
+                else:
+                    item = 1
+    #mutation end
     childSack = Knapsack()
     childSack.setSack(newSack)
     return childSack
     
 def cataclysm(leaderboard, inItems):
-    print ("Radiation at unsafe levels, mutation imminent!")
+    global evaluated
+    #print ("Radiation at unsafe levels, mutation imminent!")
+    '''
+    for sack in leaderboard:
+        for sackItem in sack.getSack():
+            print (sackItem, end="")
+        print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
+        '''
     numMutate = int(len(leaderboard[0].getSack())*0.4)
     leader = iter(leaderboard)
     next(leader)
@@ -153,17 +175,49 @@ def cataclysm(leaderboard, inItems):
                     else:
                         sack.getSack()[x] = 0
             calcFitness(sack,inItems)
+            evaluated += 1
             if (sack.getValue()>0):
                 satisfactory = True
             counterl += 1
         #sortValue(leaderboard)
+        '''
     print ("New Population:")
     for sack in leaderboard:
         for sackItem in sack.getSack():
             print (sackItem, end="")
         print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
     print ()
+    '''
         
+def ritual(count,leaderboard):
+    #print ("New Offspring:")
+    childSack = createOffspring(leaderboard[count],leaderboard[count+1])
+    calcFitness(childSack,items);
+    #for sackItem in childSack.getSack():
+    #    print (sackItem, end="")
+    #print (", Cost = ",childSack.getCost(), ", Value = ",childSack.getValue())
+    #print ()
+    if (childSack.getValue()>leaderboard[-1].getValue()):
+        '''
+        print("Ritual passed! Child is fit to be accepted into the population.")
+        print ()
+        '''
+        leaderboard.append(childSack)
+        sortValue(leaderboard)
+        del leaderboard[-1]
+        '''
+        print ("New Population:")
+        for sack in leaderboard:
+            for sackItem in sack.getSack():
+                print (sackItem, end="")
+            print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
+        print ()
+        '''
+    else:
+        '''
+        print("Ritual failed! Child is unfit to be accepted into society. Commencing incineration of disgraceful offspring.")
+        print()
+        '''
         
 f = sys.stdin.readlines()
 reader = csv.reader(f)
@@ -182,56 +236,66 @@ for row in reader:
 leaderboard = []
 leadCount = 0
 while (leadCount < 100):
+    evaluated += 1
     sack = Knapsack()
     randomGenesis(sack,len(items))
     calcFitness(sack,items)
     if (sack.getValue()>0):
         leaderboard.append(sack)
         leadCount += 1
-print ("100 Sacks Are:")
+#print ("100 Sacks Are:")
 sortValue(leaderboard)
+'''
 for sack in leaderboard:
     for sackItem in sack.getSack():
         print (sackItem, end="")
     print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
 print ()
-childSack = 0
-counter = 0
+'''
+#childSack = Knapsack()
+count = 0
 mutationCount = 0
 while (mutationCount < 4):
     cataclysm(leaderboard, items)
     mutationCount += 1
-    while (childSack != leaderboard[-1] and counter<len(leaderboard)-1):
-        print ("New Offspring:")
-        childSack = createOffspring(leaderboard[counter],leaderboard[counter+1]);
-        calcFitness(childSack,items);
-        for sackItem in childSack.getSack():
-            print (sackItem, end="")
-        print (", Cost = ",childSack.getCost(), ", Value = ",childSack.getValue())
-        print ()
-        if (childSack.getValue()>leaderboard[-1].getValue()):
-            print("Ritual passed! Child is fit to be accepted into the population.")
-            print ()
-            leaderboard.append(childSack)
-            sortValue(leaderboard)
-            compare = lambda x, y: collections.Counter(childSack.getSack()) == collections.Counter(leaderboard[0].getSack())
-            if (compare):
-                counter = -1
-            del leaderboard[-1]
-            print ("New Population:")
-            for sack in leaderboard:
-                for sackItem in sack.getSack():
-                    print (sackItem, end="")
-                print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
-            print ()
-        else:
-            print("Ritual failed! Child is unfit to be accepted into society. Commencing incineration of disgraceful offspring.")
-            print()
-        counter += 1
-    counter = 0
+    while (count<len(leaderboard)-1):
+        ritual(count,leaderboard)
+        evaluated += 1
+        count += 1
+        '''
+        if (count == len(leaderboard)-1):
+            compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
+            for x in range(0,len(leaderboard)-2):
+                equal = compare(leaderboard[x].getSack(), leaderboard[x+1].getSack())
+                if (equal == False):
+                    count = 0
+        '''
+    count = 0
+    '''
+    while True:
+        check = True
+        compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
+        for x in range(0,len(leaderboard)-1):
+            equal = compare(leaderboard[x].getSack(), leaderboard[x+1].getSack())
+            #print (equal)
+            if (equal == False):
+                check = False
+                while (count<len(leaderboard)-1):
+                    ritual(count,leaderboard)
+                    count += 1
+        count = 0
+        if (check == True):
+            break
+    
 print ("Final Population (Master Race):")
 for sack in leaderboard:
     for sackItem in sack.getSack():
         print (sackItem, end="")
     print (", Cost = ",sack.getCost(), ", Value = ",sack.getValue())
+    '''
+print ("Optimal Knapsack, after genetic process: ")
+for sackItem in leaderboard[0].getSack():
+    print (sackItem, end="")
+print (", Cost = ",leaderboard[0].getCost(), ", Value = ",leaderboard[0].getValue())
 print ()
+print ("Creatures evaluated: ", evaluated)
