@@ -54,6 +54,9 @@ class Attempt:
 
 	def getUsed(self):
 		return self.used
+	
+	def setUsed(self, inList):
+	    self.used = inList
 
 	def getUnused(self):
 		return self.unused
@@ -93,6 +96,7 @@ class Attempt:
 		#print (self.words)
 
 	def calculateScore(self):
+	    self.totalScore = 0
 	    for each in self.words:
 	        #print (each.getWord())
 	        if each.getWord() in legal:
@@ -153,6 +157,23 @@ def createAttempt(parent1, parent2, unused):
                 newAttempt.addToWords(parent2.getWords()[x])
     return newAttempt
             
+def cataclysm(leaderboard):
+    for x in range (1, len(leaderboard)-1):
+        currentAttempt = leaderboard[x]
+        for word in currentAttempt.getWords():
+            chance = randint(0,9)
+            if chance <= 3:
+                unusedCopy = copy.deepcopy(currentAttempt.getUnused())
+                usedCopy = copy.deepcopy(currentAttempt.getUsed())
+                for char in word.getWord():
+                    unusedCopy.append(char)
+                    if char in usedCopy:
+                        usedCopy.remove(char)
+                currentAttempt.setUnused(unusedCopy)
+                currentAttempt.setUsed(usedCopy)
+                currentAttempt.getWords().remove(word)
+        currentAttempt.generateWords()
+        currentAttempt.calculateScore()
 
 f = open("words.txt","r")
 str1 = f.read().lower()
@@ -240,6 +261,62 @@ while True:
             break
     if equal == True:
         break
+for each in leaderboard:
+    for word in each.getWords():
+        print (word.getWord(), end=" ")
+    print ("Score", each.getTotalScore())
+print ()
+cataCount = 0
+while (cataCount < 3):
+    print ("Cataclysmic mutation!")
+    cataclysm(leaderboard)
+    print ()
+    while True:
+        leaderboard.sort(key=lambda x: x.getTotalScore(), reverse=True)
+        weight = 100
+        accumulator = 0
+        selected1 = Attempt()
+        selected2 = Attempt()
+        isSelected1 = False
+        isSelected2 = False
+        randSelected1 = randint(1,5050)
+        randSelected2 = randint(1,5050)
+        for each in leaderboard:
+        	#if each.getTotalScore() > 10:
+        	#	print ("High!")
+        	#print ("Score:", each.getTotalScore())
+        	accumulator += weight
+        	each.setWeight(weight)
+        	weight -= 1
+        	if isSelected1 != True and randSelected1 <= accumulator:
+        	    selected1 = each
+        	    isSelected1 = True
+        	if isSelected2 != True and randSelected2 <= accumulator:
+        	    selected2 = each
+        	    isSelected2 = True
+        guess2 = []
+        for char in guess:
+            guess2.append(char)
+        newAttempt = createAttempt(selected1, selected2, guess2)
+        newAttempt.generateWords()
+        newAttempt.calculateScore()
+        print ("Score", newAttempt.getTotalScore())
+        if (newAttempt.getTotalScore() > leaderboard[-1].getTotalScore()):
+            #print ("Child accepted!")
+            leaderboard.append(newAttempt)
+            leaderboard.sort(key=lambda x: x.getTotalScore(), reverse=True)
+            del leaderboard[-1]
+        #else:
+            #print ("Child not accepted!")
+        firstScore = leaderboard[0].getTotalScore()
+        equal1 = 0
+        for each in leaderboard:
+            if each.getTotalScore() != firstScore:
+                equal1 += 1
+        if equal1 <= 5:
+            break
+    cataCount += 1
+print ("Final Population:")
 for each in leaderboard:
     for word in each.getWords():
         print (word.getWord(), end=" ")
