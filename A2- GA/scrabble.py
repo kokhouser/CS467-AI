@@ -313,7 +313,7 @@ while (cataCount < 3):
         for each in leaderboard:
             if each.getTotalScore() != firstScore:
                 equal1 += 1
-        if equal1 <= 5:
+        if equal1 <= 2:
             break
     cataCount += 1
 print ("Final Population:")
