@@ -27,14 +27,22 @@ class Gamestate:
             return False
     
     def suggestMove(self, currentSymbol):
-        chance = random.randint(0,890)
+        #chance = random.randint(0,890)
         counter = 0
         if currentSymbol == "X":
+            totalChance = 0
+            for probs in self.chancesX:
+                totalChance += probs
+            chance = random.randint(0,totalChance)
             for x, chanceX in enumerate(self.chancesX):
                 counter += self.chancesX[x]
                 if counter >= chance:
                     return x
         else:
+            totalChance = 0
+            for probs in self.chancesO:
+                totalChance += probs
+            chance = random.randint(0,totalChance)
             for x, chanceO in enumerate(self.chancesO):
                 counter += self.chancesO[x]
                 if counter >= chance:
@@ -110,7 +118,8 @@ states.states.append(state)
 winX = 0
 winO = 0
 draws = 0
-for i in range (0,100):
+print ("Training self...")
+for i in range (0,5000):
     currentSymbol = "X"
     currentState = states.states[0]
     movesX = {}
@@ -136,17 +145,52 @@ for i in range (0,100):
     print ()
     '''
     if (currentState.isGameOver() == "X"):
-        print ("X won!")
+        #print ("X won!")
         winX += 1
+        for key, value in movesX.items():
+            key.chancesX[value] += 10
+        for key, value in movesY.items():
+            key.chancesO[value] -= 10
+            if key.chancesO[value] < 0:
+                key.chancesO[value] = 0
                     
     elif (currentState.isGameOver() == "O"):
-        print ("O won!")
+        #print ("O won!")
         winO += 1
+        for key, value in movesY.items():
+            key.chancesO[value] += 10
+        for key, value in movesX.items():
+            key.chancesX[value] -= 10
+            if key.chancesX[value] < 0:
+                key.chancesX[value] = 0
         
     elif (currentState.isGameOver() == -2):
-        print ("Draw!")
+        #print ("Draw!")
         draws += 1
 
 print ("X has won",winX,"times.")
 print ("O has won",winO,"times.")
 print ("Draws occured",draws,"times.")
+print ()
+print ("Now for my real purpose.")
+currentSymbol = "X"
+currentState = states.states[0]
+while True:
+    nextMove = currentState.suggestMove(currentSymbol)
+    currentState = states.makeMove(currentState,nextMove,currentSymbol)
+    for x,symbol in enumerate(currentState.state):
+        if (x%3 == 0):
+            print ()
+        print (symbol, end="")
+    print ()
+    if (currentState.isGameOver() != -1):
+        break
+    humanMove = int(input("Enter your move - 0 to 8: "))
+    currentState = states.makeMove(currentState, humanMove, "O")
+    for x,symbol in enumerate(currentState.state):
+        if (x%3 == 0):
+            print ()
+        print (symbol, end="")
+    print ()
+    if (currentState.isGameOver() != -1):
+        break
