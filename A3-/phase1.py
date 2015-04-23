@@ -78,17 +78,16 @@ class Gamestate:
 class Statelog:
     
     def __init__(self):
-        self.states=[]
+        self.states={}
     
     def makeMove(self, prevState, movePos, symbol):
         newList = copy.deepcopy(prevState.state)
         newList[movePos] = symbol
         isNew = True
         currentState = 0
-        for state in self.states:
-            if (state.isEqual(newList)):
-                isNew = False
-                currentState = state
+        if ((''.join(newList)) in self.states):
+            isNew = False
+            currentState = self.states[''.join(newList)]
         if (isNew):
             newState = Gamestate()
             newState.state = newList
@@ -106,7 +105,7 @@ class Statelog:
                     newState.chancesO[x] = 900//count
                 else:
                     newState.chancesO[x] = 0
-            self.states.append(newState)
+            self.states[''.join(newState.state)] = newState
             return newState
         else:
             return currentState
@@ -114,14 +113,15 @@ class Statelog:
 
 state = Gamestate()
 states = Statelog()
-states.states.append(state)
+states.states[''.join(state.state)] = state
 winX = 0
 winO = 0
 draws = 0
 print ("Training self...")
 for i in range (0,5000):
+    print (i)
     currentSymbol = "X"
-    currentState = states.states[0]
+    currentState = states.states[''.join(state.state)]
     movesX = {}
     movesY = {}
     while True:
@@ -171,10 +171,11 @@ for i in range (0,5000):
 print ("X has won",winX,"times.")
 print ("O has won",winO,"times.")
 print ("Draws occured",draws,"times.")
+print (states.states[''.join(state.state)].chancesX)
 print ()
 print ("Now for my real purpose.")
 currentSymbol = "X"
-currentState = states.states[0]
+currentState = states.states[''.join(state.state)]
 while True:
     nextMove = currentState.suggestMove(currentSymbol)
     currentState = states.makeMove(currentState,nextMove,currentSymbol)
