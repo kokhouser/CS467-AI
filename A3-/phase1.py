@@ -150,7 +150,7 @@ for i in range (0,50000):
         for key, value in movesX.items():
             key.chancesX[value] += 10
         for key, value in movesY.items():
-            key.chancesO[value] -= 20
+            key.chancesO[value] -= 20   
             if key.chancesO[value] < 0:
                 key.chancesO[value] = 0
                     
